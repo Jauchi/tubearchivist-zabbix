@@ -10,174 +10,264 @@ zabbix_export:
       groups:
         - name: Templates/Applications
       items:
-        - uuid: 1475c6ffe385488bbe87021ab2a2d72d
-          name: 'Tubearchivist - items in download queue'
-          type: DEPENDENT
-          key: tubearchivist.api.stats.download.queue_length
-          delay: '0'
-          history: 7d
-          preprocessing:
-            - type: JSONPATH
-              parameters:
-                - $.downloads.pending
-          master_item:
-            key: tubearchivist.api.stats.primary
-          triggers:
-            - uuid: f91fafb03b80475a9e03b8fbc0b134c8
-              expression: 'timeleft(/Tubearchivist by API/tubearchivist.api.stats.download.queue_length,1h,0)<86400'
-              name: 'Tubearchivist - less than 24 hours of downloads remaining'
-              priority: AVERAGE
-              description: 'Tubearchivist will run out of videos to download in less than 24 hours.'
-            - uuid: 91df401449534ef4b60197d0f8f639b9
-              expression: 'timeleft(/Tubearchivist by API/tubearchivist.api.stats.download.queue_length,1h,0)<172800'
-              name: 'Tubearchivist - less than 48 hours of downloads remaining'
-              priority: WARNING
-              description: 'Tubearchivist will run out of videos to download in less than 48 hours.'
-            - uuid: ef673e5505644c25861a68f2cbbf952d
-              expression: |
-                changecount(/Tubearchivist by API/tubearchivist.api.stats.download.queue_length,1h)=0
-                and
-                last(/Tubearchivist by API/tubearchivist.api.stats.download.queue_length) > 0
-              name: 'Tubearchivist - no download progress for 1 hour'
-              priority: AVERAGE
-              description: |
-                Tubearchivist download queue has not progressed for over 1 hour.
-                This indicates a large download, or that no download is currently running.
-            - uuid: 2f803c4ec30848a0a3db978b3d93fae9
-              expression: 'changecount(/Tubearchivist by API/tubearchivist.api.stats.download.queue_length,15m)=0 and last(/Tubearchivist by API/tubearchivist.api.stats.download.queue_length) > 0'
-              name: 'Tubearchivist - no download progress for 15 minutes'
-              priority: INFO
-              description: |
-                Tubearchivist download queue has not progressed for over 15 minutes.
-                This indicates a large download, or that no download is currently running.
-            - uuid: a516399f0ce34a758cbc5b4f52215a62
-              expression: |
-                changecount(/Tubearchivist by API/tubearchivist.api.stats.download.queue_length,30m)=0
-                and
-                last(/Tubearchivist by API/tubearchivist.api.stats.download.queue_length) > 0
-              name: 'Tubearchivist - no download progress for 30 minutes'
-              priority: WARNING
-              description: |
-                Tubearchivist download queue has not progressed for over 30 minutes.
-                This indicates a large download, or that no download is currently running.
-            - uuid: d0a319e6109f49d2875c1d09203bb996
-              expression: 'last(/Tubearchivist by API/tubearchivist.api.stats.download.queue_length) = 0'
-              name: 'Tubearchivist download queue is empty'
-              priority: HIGH
-              description: 'Tubearchivist has run out of videos to download.'
-        - uuid: 49f7159dac4141b4b9d321a3882f7f70
-          name: 'Tubearchivist primary statistics by HTTP'
+        - uuid: 2c9e5e241cf0432b8d0ffaa6e553b338
+          name: 'Tubearchivist download statistics by HTTP'
           type: HTTP_AGENT
-          key: tubearchivist.api.stats.primary
+          key: tubearchivist.api.raw.download
           history: '0'
           trends: '0'
           value_type: TEXT
           timeout: 15s
-          url: '{$TA_URL}/api/stats/primary/'
+          url: '{$TA_URL}/api/download/?format=json'
           headers:
             - name: Authorization
               value: 'Token {$TA_TOKEN}'
-        - uuid: 86068b668baf4e5c93ef4854f72cf68a
-          name: 'Tubearchivist - number of shorts'
-          type: DEPENDENT
-          key: tubearchivist.api.stats.videos.num_shorts
-          delay: '0'
-          history: 7d
-          preprocessing:
-            - type: JSONPATH
-              parameters:
-                - $.videos.shorts
-          master_item:
-            key: tubearchivist.api.stats.primary
-        - uuid: 0061dcd61ddd4f14859f6a25b287d0a3
-          name: 'Tubearchivist - number of streams'
-          type: DEPENDENT
-          key: tubearchivist.api.stats.videos.num_streams
-          delay: '0'
-          history: 7d
-          preprocessing:
-            - type: JSONPATH
-              parameters:
-                - $.videos.streams
-          master_item:
-            key: tubearchivist.api.stats.primary
-        - uuid: 9e37118eed6d4b96acda62a5cedb636a
-          name: 'Tubearchivist - number of videos'
-          type: DEPENDENT
-          key: tubearchivist.api.stats.videos.num_videos
-          delay: '0'
-          history: 7d
-          preprocessing:
-            - type: JSONPATH
-              parameters:
-                - $.videos.videos
-          master_item:
-            key: tubearchivist.api.stats.primary
-        - uuid: 09f539aee9844b26a485d9acfe59b626
-          name: 'Tubearchivist - total videos'
-          type: DEPENDENT
-          key: tubearchivist.api.stats.videos.total
-          delay: '0'
-          history: 7d
-          preprocessing:
-            - type: JSONPATH
-              parameters:
-                - $.videos.total
-          master_item:
-            key: tubearchivist.api.stats.primary
-        - uuid: ab5a01336a6744358d05c7cb10954167
-          name: 'Tubearchivist watch statistics by HTTP'
+          tags:
+            - tag: component
+              value: raw
+        - uuid: 95605a716d2f426fab99c1af18233ee8
+          name: 'Tubearchivist download status by HTTP'
           type: HTTP_AGENT
-          key: tubearchivist.api.stats.watch
+          key: tubearchivist.api.raw.notification.downloads
+          history: '0'
+          trends: '0'
+          value_type: TEXT
+          timeout: 15s
+          url: '{$TA_URL}/api/notification/'
+          headers:
+            - name: Authorization
+              value: 'Token {$TA_TOKEN}'
+          tags:
+            - tag: component
+              value: raw
+        - uuid: 49f7159dac4141b4b9d321a3882f7f70
+          name: 'Tubearchivist video statistics by HTTP'
+          type: HTTP_AGENT
+          key: tubearchivist.api.raw.stats.video
           delay: 15m
           history: '0'
           trends: '0'
           value_type: TEXT
           timeout: 15s
-          url: '{$TA_URL}/api/stats/watch/'
+          url: '{$TA_URL}/api/stats/video/'
           headers:
             - name: Authorization
               value: 'Token {$TA_TOKEN}'
-        - uuid: 206f826419b1444fa5a4e6cecfc5c27c
-          name: 'Tubearchivist - seconds of content available'
+          tags:
+            - tag: component
+              value: raw
+        - uuid: bbb88e1dd8334aa6a8c31b5ff9af8ae4
+          name: 'Number of downloads running'
           type: DEPENDENT
-          key: tubearchivist.api.stats.watch.total_secs
+          key: tubearchivist.api.stat.download.number_of_running_downloads
           delay: '0'
-          history: 7d
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.[?(@.group==''download:run'')].length()'
+          master_item:
+            key: tubearchivist.api.raw.notification.downloads
+        - uuid: 72d8ab89cb8245fcad5bfb48b4ac8d3e
+          name: 'Total number of items in download queue'
+          type: DEPENDENT
+          key: tubearchivist.api.stat.download.queue_length
+          delay: '0'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.paginate.total_hits
+          master_item:
+            key: tubearchivist.api.raw.download
+          triggers:
+            - uuid: 69d4f40b5b24430db7a950b173efda56
+              expression: 'changecount(/Tubearchivist by API/tubearchivist.api.stat.download.queue_length,{$TA_NO_DOWNLOAD_WARN_DURATION_SECS})=0'
+              name: 'No videos were performed within {$TA_NO_DOWNLOAD_WARN_DURATION}'
+              priority: WARNING
+              manual_close: 'YES'
+        - uuid: 5a86595289aa4c7bbd0409fb7a6abfe7
+          name: 'Download speed'
+          type: DEPENDENT
+          key: tubearchivist.api.stat.download.speed
+          delay: '0'
+          value_type: FLOAT
+          units: bit/s
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.[?(@.group==''download:run'')].messages[1]'
+              error_handler: DISCARD_VALUE
+            - type: REGEX
+              parameters:
+                - '.*at[ ]*([\d\.]*)(.*\/s).*'
+                - '\1 \2'
+              error_handler: DISCARD_VALUE
+            - type: JAVASCRIPT
+              parameters:
+                - |
+                  const spl = value.split(' ')
+                  const unit = spl[1]
+                  const val = spl[0]
+                  
+                  if (unit.endsWith('MiB/s')) {
+                    return val * 1024 * 1024 * 8
+                  } else if (unit.endsWith('KiB/s')) {
+                    return val * 1024 * 8
+                  } else {
+                    return val * 8
+                  }
+          master_item:
+            key: tubearchivist.api.raw.notification.downloads
+          triggers:
+            - uuid: 6e936fe545e34e61bc1f340438dafc63
+              expression: 'avg(/Tubearchivist by API/tubearchivist.api.stat.download.speed,#10)<{$TA_THROTTLED_RATE_BITS}'
+              name: 'Tubearchivist - download speed throttled'
+              priority: WARNING
+              manual_close: 'YES'
+        - uuid: 9a744c5e147943a4b4e17523d3fc84eb
+          name: 'Tubearchivist - total duration'
+          type: DEPENDENT
+          key: 'tubearchivist.api.stat.total_duration["all"]'
+          delay: '0'
           units: s
           preprocessing:
             - type: JSONPATH
               parameters:
-                - $.all.duration
+                - $.duration
           master_item:
-            key: tubearchivist.api.stats.watch
+            key: tubearchivist.api.raw.stats.video
+        - uuid: 96a8189a6de3498fae9f1197ebe9cf49
+          name: 'Tubearchivist - shorts duration'
+          type: DEPENDENT
+          key: 'tubearchivist.api.stat.total_duration["shorts"]'
+          delay: '0'
+          units: s
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.type_shorts.duration
+          master_item:
+            key: tubearchivist.api.raw.stats.video
+        - uuid: 450bbd83d2894b998591eb657c45df4d
+          name: 'Tubearchivist - streams duration'
+          type: DEPENDENT
+          key: 'tubearchivist.api.stat.total_duration["streams"]'
+          delay: '0'
+          units: s
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.type_streams.duration
+          master_item:
+            key: tubearchivist.api.raw.stats.video
+        - uuid: e9f5639c68b24ea58044696cd8995bee
+          name: 'Tubearchivist - video duration'
+          type: DEPENDENT
+          key: 'tubearchivist.api.stat.total_duration["video"]'
+          delay: '0'
+          units: s
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.type_videos.duration
+          master_item:
+            key: tubearchivist.api.raw.stats.video
+        - uuid: 5abe1504e86149c5a10e463fd5bf749d
+          name: 'Tubearchivist - total number of shorts'
+          type: DEPENDENT
+          key: 'tubearchivist.api.stat.total_entries["shorts"]'
+          delay: '0'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.type_shorts.doc_count
+          master_item:
+            key: tubearchivist.api.raw.stats.video
+        - uuid: 64bf48efb66646a68dc0bc7722a91566
+          name: 'Tubearchivist - total number of streams'
+          type: DEPENDENT
+          key: 'tubearchivist.api.stat.total_entries["streams"]'
+          delay: '0'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.type_streams.doc_count
+          master_item:
+            key: tubearchivist.api.raw.stats.video
+        - uuid: 318dd59f6c4542cbb293f402158c2637
+          name: 'Tubearchivist - total number of videos'
+          type: DEPENDENT
+          key: 'tubearchivist.api.stat.total_entries["videos"]'
+          delay: '0'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.doc_count
+          master_item:
+            key: tubearchivist.api.raw.stats.video
+        - uuid: fcf68a021a32408fa4c4fa172c84cdb2
+          name: 'Tubearchivist - total size'
+          type: DEPENDENT
+          key: 'tubearchivist.api.stat.total_size["all"]'
+          delay: '0'
+          units: Byte
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.media_size
+          master_item:
+            key: tubearchivist.api.raw.stats.video
+        - uuid: f1f56f2bf8fa49178bb92928fc7d97e0
+          name: 'Tubearchivist - shorts size'
+          type: DEPENDENT
+          key: 'tubearchivist.api.stat.total_size["shorts"]'
+          delay: '0'
+          units: Byte
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.type_shorts.media_size
+          master_item:
+            key: tubearchivist.api.raw.stats.video
+        - uuid: 62ad5ce0e0b54aa9979ccef4829af11a
+          name: 'Tubearchivist - streams size'
+          type: DEPENDENT
+          key: 'tubearchivist.api.stat.total_size["streams"]'
+          delay: '0'
+          units: Byte
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.type_streams.media_size
+          master_item:
+            key: tubearchivist.api.raw.stats.video
+        - uuid: f049a56898c64ffca6149e520dcad01f
+          name: 'Tubearchivist - video size'
+          type: DEPENDENT
+          key: 'tubearchivist.api.stat.total_size["video"]'
+          delay: '0'
+          units: Byte
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.type_videos.media_size
+          master_item:
+            key: tubearchivist.api.raw.stats.video
       macros:
         - macro: '{$TA_API_TOKEN}'
           description: 'API token'
+        - macro: '{$TA_NO_DOWNLOAD_WARN_DURATION}'
+          value: 1w
+          description: 'Time until the ''no downloads were performed'' Trigger fires'
+        - macro: '{$TA_THROTTLED_RATE_BITS}'
+          value: '4000000'
+          description: 'Average download bitrate after which Tubearchivist is considered throttled'
         - macro: '{$TA_URL}'
           description: 'Tubearchivist URL'
   triggers:
-    - uuid: eb31e0d8d471411283451398825a5f76
+    - uuid: fb34c7d687ea4b228aaec4667363de4c
       expression: |
-        changecount(/Tubearchivist by API/tubearchivist.api.stats.watch.total_secs,168h)=0
-        or
-        changecount(/Tubearchivist by API/tubearchivist.api.stats.videos.total,168h)=0
-      name: 'Tubearchivist - no new content added for 1 week'
+        last(/Tubearchivist by API/tubearchivist.api.stat.download.number_of_running_downloads) = 0 and
+        last(/Tubearchivist by API/tubearchivist.api.stat.download.queue_length) > 0
+      name: 'No videos are downloading but download queue is not empty'
       priority: AVERAGE
-      description: 'Tubearchivist had no new content added for one week. Check subscription schedules and ensure they work properly.'
-    - uuid: 896fba82a7c949999725738210279bb0
-      expression: |
-        nodata(/Tubearchivist by API/tubearchivist.api.stats.primary,1h)=1
-        or
-        nodata(/Tubearchivist by API/tubearchivist.api.stats.watch,1h)=1
-      name: 'Tubearchivist statistics are unavailable for over 1 hour'
-      priority: AVERAGE
-      description: 'Could not collect statistics from tubearchivist.'
-    - uuid: 42b944adb39d4736a43da592c3224e06
-      expression: |
-        nodata(/Tubearchivist by API/tubearchivist.api.stats.primary,15m)=1
-        or
-        nodata(/Tubearchivist by API/tubearchivist.api.stats.watch,15m)=1
-      name: 'Tubearchivist statistics were unavailable for over 15 minutes'
-      priority: WARNING
-      description: 'Could not collect statistics from tubearchivist.'
+      manual_close: 'YES'
