@@ -18,7 +18,7 @@ zabbix_export:
           trends: '0'
           value_type: TEXT
           timeout: 15s
-          url: '{$TA_URL}/api/download/?format=json'
+          url: '{$TA_URL}/api/download/?format=json&filter=pending'
           headers:
             - name: Authorization
               value: 'Token {$TA_TOKEN}'
@@ -56,6 +56,17 @@ zabbix_export:
           tags:
             - tag: component
               value: raw
+        - uuid: e540da8aa4d449a38e0ea077cab63ce9
+          name: 'Number of failed downloads'
+          type: DEPENDENT
+          key: tubearchivist.api.stat.download.number_of_failed_downloads
+          delay: '0'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.data.[?(@.message)].youtube_id.length()'
+          master_item:
+            key: tubearchivist.api.raw.download
         - uuid: bbb88e1dd8334aa6a8c31b5ff9af8ae4
           name: 'Number of downloads running'
           type: DEPENDENT
@@ -81,7 +92,7 @@ zabbix_export:
           triggers:
             - uuid: 69d4f40b5b24430db7a950b173efda56
               expression: 'changecount(/Tubearchivist by API/tubearchivist.api.stat.download.queue_length,{$TA_NO_DOWNLOAD_WARN_DURATION_SECS})=0'
-              name: 'No videos were performed within {$TA_NO_DOWNLOAD_WARN_DURATION}'
+              name: 'No downloads were performed within {$TA_NO_DOWNLOAD_WARN_DURATION}'
               priority: WARNING
               manual_close: 'YES'
         - uuid: 5a86595289aa4c7bbd0409fb7a6abfe7
@@ -267,7 +278,7 @@ zabbix_export:
     - uuid: fb34c7d687ea4b228aaec4667363de4c
       expression: |
         last(/Tubearchivist by API/tubearchivist.api.stat.download.number_of_running_downloads) = 0 and
-        last(/Tubearchivist by API/tubearchivist.api.stat.download.queue_length) > 0
+        (last(/Tubearchivist by API/tubearchivist.api.stat.download.queue_length) - last(/Tubearchivist by API/tubearchivist.api.stat.download.number_of_failed_downloads)) > 0
       name: 'No videos are downloading but download queue is not empty'
       priority: AVERAGE
       manual_close: 'YES'
