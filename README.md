@@ -17,7 +17,7 @@ In case of downloads randomly quitting, Zabbix can restart your download queue f
 Depending on how far you integrated Zabbix into your environment, you could additionally kill tubearchivist after a set amount of failures.
 
 ## Requirements
-* Tested using Tubearchivist 0.4.8 and Zabbix 6.4, YMMV
+* Tested using Tubearchivist 0.5.0 and Zabbix 7.0.6, YMMV
 * Tubearchivist needs to be accessible via Zabbix Server
 * [Tubearchivist API key](https://docs.tubearchivist.com/api/introduction/#authentication)
 
