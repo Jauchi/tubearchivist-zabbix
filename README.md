@@ -39,5 +39,5 @@ Then, add a new Host and set two Macros:
 
 * `{$TA_URL}`: This is the URL tubearchivist is reachable at, for example, `https://tubearchivist.example.com`
 * `{$TA_TOKEN}`: The Token used to authenticate with tubearchivist
-## Custom alert script
+## Custom alert script (start downloads when no download is running but queue not empty)
 See [here](docs/download_script.md)
