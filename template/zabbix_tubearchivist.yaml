@@ -1,5 +1,5 @@
 zabbix_export:
-  version: '6.4'
+  version: '7.0'
   template_groups:
     - uuid: a571c0d144b14fd4a87a9d9b2aa9fcd6
       name: Templates/Applications
@@ -15,13 +15,13 @@ zabbix_export:
           type: HTTP_AGENT
           key: tubearchivist.api.raw.download
           history: '0'
-          trends: '0'
           value_type: TEXT
+          trends: '0'
+          authtype: BASIC
+          username: '{$TA_BASICAUTH_USER}'
+          password: '{$TA_BASICAUTH_PASS}'
           timeout: 15s
-          url: '{$TA_URL}/api/download/?format=json&filter=pending'
-          headers:
-            - name: Authorization
-              value: 'Token {$TA_TOKEN}'
+          url: '{$TA_URL}/api/download/?filter=pending'
           tags:
             - tag: component
               value: raw
@@ -30,13 +30,13 @@ zabbix_export:
           type: HTTP_AGENT
           key: tubearchivist.api.raw.notification.downloads
           history: '0'
-          trends: '0'
           value_type: TEXT
+          trends: '0'
+          authtype: BASIC
+          username: '{$TA_BASICAUTH_USER}'
+          password: '{$TA_BASICAUTH_PASS}'
           timeout: 15s
           url: '{$TA_URL}/api/notification/'
-          headers:
-            - name: Authorization
-              value: 'Token {$TA_TOKEN}'
           tags:
             - tag: component
               value: raw
@@ -46,13 +46,13 @@ zabbix_export:
           key: tubearchivist.api.raw.stats.video
           delay: 15m
           history: '0'
-          trends: '0'
           value_type: TEXT
+          trends: '0'
+          authtype: BASIC
+          username: '{$TA_BASICAUTH_USER}'
+          password: '{$TA_BASICAUTH_PASS}'
           timeout: 15s
           url: '{$TA_URL}/api/stats/video/'
-          headers:
-            - name: Authorization
-              value: 'Token {$TA_TOKEN}'
           tags:
             - tag: component
               value: raw
@@ -61,6 +61,7 @@ zabbix_export:
           type: DEPENDENT
           key: tubearchivist.api.stat.download.number_of_failed_downloads
           delay: '0'
+          history: 90d
           preprocessing:
             - type: JSONPATH
               parameters:
@@ -72,6 +73,7 @@ zabbix_export:
           type: DEPENDENT
           key: tubearchivist.api.stat.download.number_of_running_downloads
           delay: '0'
+          history: 90d
           preprocessing:
             - type: JSONPATH
               parameters:
@@ -83,6 +85,7 @@ zabbix_export:
           type: DEPENDENT
           key: tubearchivist.api.stat.download.queue_length
           delay: '0'
+          history: 90d
           preprocessing:
             - type: JSONPATH
               parameters:
@@ -100,6 +103,7 @@ zabbix_export:
           type: DEPENDENT
           key: tubearchivist.api.stat.download.speed
           delay: '0'
+          history: 90d
           value_type: FLOAT
           units: bit/s
           preprocessing:
@@ -139,6 +143,7 @@ zabbix_export:
           type: DEPENDENT
           key: 'tubearchivist.api.stat.total_duration["all"]'
           delay: '0'
+          history: 90d
           units: s
           preprocessing:
             - type: JSONPATH
@@ -151,6 +156,7 @@ zabbix_export:
           type: DEPENDENT
           key: 'tubearchivist.api.stat.total_duration["shorts"]'
           delay: '0'
+          history: 90d
           units: s
           preprocessing:
             - type: JSONPATH
@@ -163,6 +169,7 @@ zabbix_export:
           type: DEPENDENT
           key: 'tubearchivist.api.stat.total_duration["streams"]'
           delay: '0'
+          history: 90d
           units: s
           preprocessing:
             - type: JSONPATH
@@ -175,6 +182,7 @@ zabbix_export:
           type: DEPENDENT
           key: 'tubearchivist.api.stat.total_duration["video"]'
           delay: '0'
+          history: 90d
           units: s
           preprocessing:
             - type: JSONPATH
@@ -187,6 +195,7 @@ zabbix_export:
           type: DEPENDENT
           key: 'tubearchivist.api.stat.total_entries["shorts"]'
           delay: '0'
+          history: 90d
           preprocessing:
             - type: JSONPATH
               parameters:
@@ -198,6 +207,7 @@ zabbix_export:
           type: DEPENDENT
           key: 'tubearchivist.api.stat.total_entries["streams"]'
           delay: '0'
+          history: 90d
           preprocessing:
             - type: JSONPATH
               parameters:
@@ -209,6 +219,7 @@ zabbix_export:
           type: DEPENDENT
           key: 'tubearchivist.api.stat.total_entries["videos"]'
           delay: '0'
+          history: 90d
           preprocessing:
             - type: JSONPATH
               parameters:
@@ -220,6 +231,7 @@ zabbix_export:
           type: DEPENDENT
           key: 'tubearchivist.api.stat.total_size["all"]'
           delay: '0'
+          history: 90d
           units: Byte
           preprocessing:
             - type: JSONPATH
@@ -232,6 +244,7 @@ zabbix_export:
           type: DEPENDENT
           key: 'tubearchivist.api.stat.total_size["shorts"]'
           delay: '0'
+          history: 90d
           units: Byte
           preprocessing:
             - type: JSONPATH
@@ -244,6 +257,7 @@ zabbix_export:
           type: DEPENDENT
           key: 'tubearchivist.api.stat.total_size["streams"]'
           delay: '0'
+          history: 90d
           units: Byte
           preprocessing:
             - type: JSONPATH
@@ -256,6 +270,7 @@ zabbix_export:
           type: DEPENDENT
           key: 'tubearchivist.api.stat.total_size["video"]'
           delay: '0'
+          history: 90d
           units: Byte
           preprocessing:
             - type: JSONPATH
@@ -266,8 +281,8 @@ zabbix_export:
       macros:
         - macro: '{$TA_API_TOKEN}'
           description: 'API token'
-        - macro: '{$TA_NO_DOWNLOAD_WARN_DURATION}'
-          value: 1w
+        - macro: '{$TA_NO_DOWNLOAD_WARN_DURATION_SECS}'
+          value: 15m
           description: 'Time until the ''no downloads were performed'' Trigger fires'
         - macro: '{$TA_THROTTLED_RATE_BITS}'
           value: '4000000'
@@ -278,8 +293,8 @@ zabbix_export:
     - uuid: fb34c7d687ea4b228aaec4667363de4c
       expression: |
         last(/Tubearchivist by API/tubearchivist.api.stat.download.number_of_running_downloads) = 0 and
-        (last(/Tubearchivist by API/tubearchivist.api.stat.download.queue_length) - last(/Tubearchivist by API/tubearchivist.api.stat.download.number_of_failed_downloads)) > 0
+        (last(/Tubearchivist by API/tubearchivist.api.stat.download.queue_length) - last(/Tubearchivist by API/tubearchivist.api.stat.download.number_of_failed_downloads)) > 0 and 
+        changecount(/Tubearchivist by API/tubearchivist.api.stat.download.queue_length,{$TA_NO_DOWNLOAD_WARN_DURATION_SECS})=0
       name: 'No videos are downloading but download queue is not empty'
       priority: AVERAGE
       manual_close: 'YES'
-
